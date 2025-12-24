@@ -5,61 +5,103 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"regexp"
 	"strings"
 )
 
-// Tracks variables to decide between ":=" (create) and "=" (update)
 var declaredVars = make(map[string]bool)
 var loopCount = 0
 
 func main() {
-	// 1. Check for input file
-	if len(os.Args) < 2 {
-		fmt.Println("Usage: go run main.go [filename.simple]")
+	args := os.Args[1:]
+	if len(args) < 1 {
+		fmt.Println("Usage: go run main.go [filename.simple] [-src | -build]")
+		fmt.Println("  -src   : Converts to .go file only (does not run)")
+		fmt.Println("  -build : Compiles to a standalone executable")
 		return
 	}
 
-	// 2. Read the source code
-	data, err := os.ReadFile(os.Args[1])
+	inputFile := ""
+	mode := "run"
+
+	for _, arg := range args {
+		if arg == "-src" {
+			mode = "src"
+		} else if arg == "-build" {
+			mode = "build"
+		} else {
+			inputFile = arg
+		}
+	}
+
+	if inputFile == "" {
+		fmt.Println("Error: No input file provided.")
+		return
+	}
+
+	data, err := os.ReadFile(inputFile)
 	if err != nil {
 		fmt.Println("Error reading file:", err)
 		return
 	}
 
-	// 3. Compile to Go
 	goCode := compile(string(data))
-	tempFile := "output_gen.go"
 
-	// 4. Write the generated Go code to a temp file
-	if err := os.WriteFile(tempFile, []byte(goCode), 0644); err != nil {
-		fmt.Println("Error writing temp file:", err)
+	baseName := strings.TrimSuffix(inputFile, filepath.Ext(inputFile))
+	goFilename := baseName + ".go"
+	exeFilename := baseName
+	if os.PathSeparator == '\\' {
+		exeFilename += ".exe"
+	}
+
+	if err := os.WriteFile(goFilename, []byte(goCode), 0644); err != nil {
+		fmt.Println("Error writing Go file:", err)
 		return
 	}
 
-	// 5. Run the generated code
-	cmd := exec.Command("go", "run", tempFile)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	cmd.Stdin = os.Stdin
-	cmd.Run()
+	exec.Command("go", "fmt", goFilename).Run()
 
-	// 6. Cleanup
-	os.Remove(tempFile)
+	switch mode {
+	case "src":
+		fmt.Printf("Successfully converted '%s' to '%s'.\n", inputFile, goFilename)
+
+	case "build":
+		fmt.Printf("Building executable '%s'...\n", exeFilename)
+		cmd := exec.Command("go", "build", "-o", exeFilename, goFilename)
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+		err := cmd.Run()
+
+		if err == nil {
+			fmt.Println("Build successful.")
+			os.Remove(goFilename)
+		} else {
+			fmt.Println("Build failed.")
+		}
+
+	case "run":
+		cmd := exec.Command("go", "run", goFilename)
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+		cmd.Stdin = os.Stdin
+		cmd.Run()
+
+		os.Remove(goFilename)
+	}
 }
 
 func compile(source string) string {
 	var output strings.Builder
 
-	// --- GO BOILERPLATE ---
 	output.WriteString("package main\n")
 	output.WriteString("import (\n\"fmt\"\n\"time\"\n\"math/rand\"\n\"os\"\n\"os/exec\"\n\"strconv\"\n\"strings\"\n\"net/http\"\n\"io\"\n\"encoding/json\"\n)\n")
 
-	// --- HELPER FUNCTIONS ---
-	// These are injected into the generated code to handle types and logic
 	output.WriteString(`
 func clearScreen() { 
-	c := exec.Command("clear"); c.Stdout = os.Stdout; c.Run() 
+	c := exec.Command("clear"); 
+	if os.PathSeparator == '\\' { c = exec.Command("cmd", "/c", "cls") }
+	c.Stdout = os.Stdout; c.Run() 
 }
 func toInt(i interface{}) int {
 	switch v := i.(type) {
@@ -94,12 +136,14 @@ func parseJson(data string) interface{} {
 
 	output.WriteString("func main() {\n")
 
-	// --- PARSING LOOP ---
 	scanner := bufio.NewScanner(strings.NewReader(source))
 	for scanner.Scan() {
 		line := strings.TrimSpace(scanner.Text())
 		if line != "" {
-			output.WriteString(parseLine(line) + "\n")
+			res := parseLine(line)
+			if res != "" {
+				output.WriteString(res + "\n")
+			}
 		}
 	}
 
@@ -108,12 +152,10 @@ func parseJson(data string) interface{} {
 }
 
 func parseLine(line string) string {
-	// Ignore comments
 	if strings.HasPrefix(line, "#") {
 		return ""
 	}
 
-	// Regex to split by spaces but keep quoted strings together
 	re := regexp.MustCompile(`[^\s"]+|"[^"]*"`)
 	tokens := re.FindAllString(line, -1)
 	if len(tokens) == 0 {
@@ -122,12 +164,10 @@ func parseLine(line string) string {
 
 	cmd := tokens[0]
 
-	// --- OUTPUT ---
 	if cmd == "say" {
 		return fmt.Sprintf("fmt.Println(%s)", strings.Join(tokens[1:], " "))
 	}
 
-	// --- SYSTEM ---
 	if cmd == "wait" {
 		return fmt.Sprintf("time.Sleep(time.Duration(toInt(%s)) * time.Second)", tokens[1])
 	}
@@ -141,10 +181,8 @@ func parseLine(line string) string {
 		return fmt.Sprintf("exec.Command(\"sh\", \"-c\", %s).Run()", tokens[1])
 	}
 
-	// --- VARIABLES & MATH ---
 	if cmd == "set" {
 		v := tokens[1]
-		// Inline math: set x to y + z
 		if len(tokens) == 6 {
 			val1, op, val2 := tokens[3], tokens[4], tokens[5]
 			if declaredVars[v] {
@@ -153,7 +191,6 @@ func parseLine(line string) string {
 			declaredVars[v] = true
 			return fmt.Sprintf("%s := toInt(%s) %s toInt(%s)", v, val1, op, val2)
 		}
-		// Simple Set: set x to 10
 		val := tokens[3]
 		if declaredVars[v] {
 			return fmt.Sprintf("%s = %s", v, val)
@@ -189,7 +226,6 @@ func parseLine(line string) string {
 		return fmt.Sprintf("%s := toInt(%s) %% toInt(%s)", target, v1, v2)
 	}
 
-	// --- LOGIC ---
 	if cmd == "if" || cmd == "elif" || cmd == "while" {
 		v1, op, v2 := tokens[1], tokens[2], tokens[3]
 		goOp := "=="
@@ -227,7 +263,6 @@ func parseLine(line string) string {
 		return "}"
 	}
 
-	// --- LOOPS ---
 	if cmd == "repeat" {
 		loopCount++
 		return fmt.Sprintf("for _i%d := 0; _i%d < toInt(%s); _i%d++ {", loopCount, loopCount, tokens[1], loopCount)
@@ -238,7 +273,6 @@ func parseLine(line string) string {
 		return fmt.Sprintf("for _, %s := range %s.([]interface{}) {", itemVar, listName)
 	}
 
-	// --- LISTS ---
 	if cmd == "list" {
 		name := tokens[1]
 		items := strings.Join(tokens[3:], ",")
@@ -258,7 +292,6 @@ func parseLine(line string) string {
 		return fmt.Sprintf("%s := %s.([]interface{})[%s]", target, src, index)
 	}
 
-	// --- MAPS (DICTIONARIES) ---
 	if cmd == "map" {
 		name := tokens[1]
 		declaredVars[name] = true
@@ -277,7 +310,6 @@ func parseLine(line string) string {
 		return fmt.Sprintf("%s := %s.(map[string]interface{})[%s]", target, name, key)
 	}
 
-	// --- FUNCTIONS ---
 	if cmd == "define" {
 		if len(tokens) > 2 && tokens[2] == "with" {
 			args := tokens[3:]
@@ -299,7 +331,6 @@ func parseLine(line string) string {
 		return fmt.Sprintf("%s()", tokens[1])
 	}
 
-	// --- IO & NET ---
 	if cmd == "ask" {
 		Type, v, prompt := tokens[1], tokens[2], tokens[3]
 		declaredVars[v] = true
@@ -332,7 +363,6 @@ func parseLine(line string) string {
 		return fmt.Sprintf("%s := parseJson(%s)", target, src)
 	}
 
-	// --- RANDOM ---
 	if cmd == "random" {
 		target, min, max := tokens[1], tokens[3], tokens[4]
 		if declaredVars[target] {
