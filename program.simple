@@ -1,0 +1,113 @@
+# --- Output & Variables ---
+say "=== SIMPLE LANGUAGE TEST ==="
+set score to 10
+say "Initial Score:" score
+
+# --- Math Operations ---
+inc score
+dec score
+add 5 to score
+subtract 2 from score
+multiply score by 2
+divide score by 2
+# Complex assignment
+set bonus to 10 + 5
+modulo 10 by 3 into remainder
+say "Score:" score
+say "Bonus:" bonus
+say "Remainder:" remainder
+
+# --- Random ---
+random luckyNumber 1 100
+say "Your lucky number is:" luckyNumber
+
+# --- Logic & Control Flow ---
+if score > 10
+    say "Score is high"
+elif score is 10
+    say "Score is exactly 10"
+else
+    say "Score is low"
+end
+
+set status to "active"
+if status is_not "inactive"
+    say "System is running"
+end
+
+# --- Loops ---
+say "Counting down:"
+repeat 3
+    say "Tick..."
+end
+
+# --- Lists ---
+list fruits "apple" "banana" "orange"
+push "grape" to fruits
+get secondFruit from fruits at 1
+say "Second fruit is:" secondFruit
+
+say "Fruit Inventory:"
+each f in fruits
+    say "- Item:" f
+end
+
+# Check if list contains item
+if fruits contains "apple"
+    say "We have apples!"
+end
+
+# --- Maps (Dictionaries) ---
+map config
+put "dark_mode" into config at "theme"
+put 1 into config at "version"
+key currentTheme from config at "theme"
+say "Current Theme:" currentTheme
+
+# --- Functions ---
+define greet
+    say "Hello from a function!"
+end
+run greet
+
+define calculateArea with width height
+    set area to width * height
+    say "Area is:" area
+end
+run calculateArea with 10 5
+
+# --- File I/O ---
+say "Writing to file..."
+write "This is a test log." to "log.txt"
+
+exists "log.txt" into hasLog
+if hasLog is true
+    read "log.txt" into logContent
+    say "Read from file:" logContent
+end
+
+# --- JSON & Networking ---
+# Note: This will fail if there is no internet, so we use a mock JSON string first
+set rawJson to "{\"id\": 1, \"status\": \"ok\"}"
+json rawJson into jsonObject
+say "Parsed JSON:" jsonObject
+
+# Fetch example (Uncomment to test real network request)
+# fetch "https://jsonplaceholder.typicode.com/todos/1" into apiResponse
+# say "API Response:" apiResponse
+
+# --- System ---
+say "Waiting for 2 seconds..."
+wait 2
+# system "ls -la" 
+# clear
+
+# --- Interactive (Uncomment to test) ---
+# ask text userName "What is your name?"
+# say "Welcome," userName
+# ask number age "How old are you?"
+# say "Age in 10 years:" 
+# set futureAge to age + 10
+# say futureAge
+
+say "=== TEST COMPLETE ==="
