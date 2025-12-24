@@ -60,11 +60,7 @@ say "Nice to meet you," name "!"
 
 **2. Run it:**
 ```bash
-# If you have Go installed
 go run main.go hello.simple
-
-# Or use the compiled executable
-main.exe hello.simple
 ```
 
 **3. Start coding!** 🎉
@@ -73,45 +69,36 @@ main.exe hello.simple
 
 ## 📦 Installation & Usage
 
-### Option 1: Direct Execution (Go Required)
+### Running Simple Programs
+
+Simple provides three modes of operation:
+
+#### **Default Mode: Run**
+Compiles and executes immediately, then cleans up:
 ```bash
 go run main.go program.simple
 ```
 
-**Pros:** No build step needed  
-**Cons:** Requires Go installed, slightly slower startup
-
----
-
-### Option 2: Compiled Executable (Recommended)
-
-**Build once:**
+#### **Source Mode: Generate Go Code**
+Converts to .go file without running:
 ```bash
-# Windows
-go build -o main.exe main.go
-
-# Linux/Mac
-go build -o main main.go
+go run main.go program.simple -src
 ```
+Creates `program.go` that you can inspect or modify.
 
-**Run anywhere:**
+#### **Build Mode: Create Executable**
+Compiles to standalone executable:
 ```bash
-# Windows
-main.exe myprogram.simple
-
-# Linux/Mac
-./main myprogram.simple
+go run main.go program.simple -build
 ```
-
-**Pros:** Faster, no Go required after building  
-**Cons:** Need to rebuild if compiler changes
+Creates `program.exe` (Windows) or `program` (Unix) that runs without Go.
 
 ---
 
 ### ⚙️ System Requirements
 
-- **To build:** Go 1.16+ 
-- **To run compiled:** No dependencies!
+- **To compile:** Go 1.16+ 
+- **To run executables:** No dependencies!
 - **Platforms:** Windows, Linux, macOS
 
 ---
@@ -140,7 +127,7 @@ say x y z
 | Command | Syntax | Description |
 |---------|--------|-------------|
 | `set` | `set VAR to VALUE` | Create or update variable |
-| `set` (math) | `set VAR to X + Y` | Set with calculation |
+| `set` (math) | `set VAR to X OP Y` | Set with calculation |
 
 **Examples:**
 ```
@@ -149,9 +136,13 @@ set name to "Alice"
 set pi to 3.14
 set sum to a + b
 set product to 5 * 3
+set difference to 10 - 3
+set quotient to 20 / 4
 ```
 
 **Supported operations:** `+` `-` `*` `/`
+
+**Important:** Math expressions must follow the exact pattern: `set VAR to VALUE OPERATOR VALUE`
 
 ---
 
@@ -174,6 +165,8 @@ set score to 100
 inc score              # score = 101
 add 50 to score        # score = 151
 multiply score by 2    # score = 302
+subtract 100 from score # score = 202
+divide score by 2      # score = 101
 
 modulo 17 by 5 store remainder    # remainder = 2
 random dice between 1 6           # dice = 1-6
@@ -318,18 +311,6 @@ key mathScore from scores at "math"
 say "Math score:" mathScore
 ```
 
-**Complex example:**
-```
-map config
-put "localhost" in config at "host"
-put 8080 in config at "port"
-put true in config at "debug"
-
-key host from config at "host"
-key port from config at "port"
-say "Server running on" host ":" port
-```
-
 ---
 
 ### 🎭 Functions
@@ -432,17 +413,6 @@ else
 end
 ```
 
-**Log file example:**
-```
-set logEntry to "Program started at 10:00 AM"
-write logEntry to "app.log"
-
-# Append would overwrite - Simple keeps it simple!
-read "app.log" into oldLogs
-set newLogs to oldLogs + "\nNew entry"
-write newLogs to "app.log"
-```
-
 ---
 
 ### 🌐 Network & HTTP
@@ -462,11 +432,6 @@ say response
 fetch "https://api.github.com/users/octocat" into jsonData
 json jsonData into user
 say "User data received"
-
-# Weather API example
-fetch "https://api.weather.com/current" into weatherData
-json weatherData into weather
-say "Weather loaded"
 
 # Check if API is available
 fetch "https://example.com/api/health" into status
@@ -503,17 +468,12 @@ say "Blast off!"
 clear
 say "Screen cleared!"
 
-# Run system commands
+# Run system commands (Unix/Linux/Mac)
 system "echo 'Hello from shell'"
-system "dir"        # Windows
-system "ls -la"     # Linux/Mac
-
-# Conditional exit
-if error is true
-    say "Fatal error occurred"
-    exit
-end
+system "ls -la"
 ```
+
+**Note:** `system` command uses `sh -c` on all platforms, so use Unix-style commands.
 
 ---
 
@@ -523,7 +483,7 @@ end
 # This is a comment
 say "This runs"
 
-set x to 10    # Inline comment
+set x to 10    # Comments are ignored after code
 
 # Comments can explain your code
 # Multiple lines of comments
@@ -593,6 +553,31 @@ end
 
 ---
 
+### 🧮 Calculator
+```
+say "=== SIMPLE CALCULATOR ==="
+
+ask number a "Enter first number:"
+ask number b "Enter second number:"
+
+set sum to a + b
+set difference to a - b
+set product to a * b
+set quotient to a / b
+
+say ""
+say "Results:"
+say a "+" b "=" sum
+say a "-" b "=" difference
+say a "*" b "=" product
+say a "/" b "=" quotient
+
+modulo a by b store remainder
+say a "%" b "=" remainder
+```
+
+---
+
 ### ✅ Todo List Manager
 ```
 say "=== TODO LIST MANAGER ==="
@@ -602,8 +587,7 @@ define showMenu
     say ""
     say "1. Add task"
     say "2. View all tasks"
-    say "3. Count tasks"
-    say "4. Exit"
+    say "3. Exit"
     say ""
 end
 
@@ -628,8 +612,6 @@ while running is true
     elif choice is 2
         run showTasks
     elif choice is 3
-        say "You have tasks to complete"
-    elif choice is 4
         say "Goodbye!"
         set running to false
     else
@@ -768,8 +750,7 @@ ask number choice "Choose:"
 
 if choice is 1
     ask text entry "Write your entry:"
-    set timestamp to "Entry"
-    set newEntry to entries + "\n--- " + timestamp + " ---\n" + entry
+    set newEntry to entries
     write newEntry to "journal.txt"
     say "✓ Entry saved!"
 elif choice is 2
@@ -783,46 +764,6 @@ elif choice is 2
 elif choice is 3
     say "Goodbye!"
 end
-```
-
----
-
-### 🌐 API Data Fetcher
-```
-say "=== GITHUB USER LOOKUP ==="
-
-ask text username "Enter GitHub username:"
-
-set url to "https://api.github.com/users/" + username
-fetch url into response
-
-if response contains "Not Found"
-    say "❌ User not found!"
-else
-    say "✓ User found!"
-    say ""
-    say "=== USER DATA ==="
-    say response
-end
-```
-
----
-
-### 🔐 Password Generator
-```
-say "=== PASSWORD GENERATOR ==="
-
-ask number length "Password length:"
-
-set password to ""
-repeat length
-    random char between 33 126
-    # Would need character conversion - simplified version
-    set password to password + "*"
-end
-
-say "Generated password:" password
-say "⚠️ Keep this safe!"
 ```
 
 ---
@@ -865,22 +806,23 @@ end
 
 ---
 
-### Data Processing Pipeline
+### Working with Maps
 ```
-# Read data
-read "data.csv" into raw
+# Create configuration
+map config
+put "localhost" in config at "host"
+put 8080 in config at "port"
+put true in config at "debug"
 
-# Process
-list processed is
-each line in raw
-    if line contains "error"
-        push line to processed
-    end
+# Read configuration
+key host from config at "host"
+key port from config at "port"
+key debug from config at "debug"
+
+say "Server:" host ":" port
+if debug is true
+    say "Debug mode enabled"
 end
-
-# Save results
-write processed to "errors.txt"
-say "Processing complete!"
 ```
 
 ---
@@ -893,12 +835,75 @@ say "Processing complete!"
 
 **Operators:** `is`, `is_not`, `>`, `<`, `contains`, `to`, `from`, `in`, `at`, `with`, `by`, `store`, `into`, `between`
 
+**Commands:** `say`, `set`, `ask`, `inc`, `dec`, `add`, `subtract`, `multiply`, `divide`, `modulo`, `random`, `list`, `push`, `get`, `map`, `put`, `key`, `define`, `run`, `write`, `read`, `exists`, `fetch`, `json`, `wait`, `clear`, `exit`, `system`
+
 **Data Types:**
 - Numbers: `42`, `3.14`, `-10`
 - Strings: `"hello"`, `"multi word"`
 - Booleans: `true`, `false`
 - Lists: Arrays of mixed types
 - Maps: String-keyed dictionaries
+
+---
+
+### Syntax Patterns
+
+**Variable assignment:**
+```
+set VAR to VALUE
+set VAR to VALUE1 OPERATOR VALUE2
+```
+
+**Math operations:**
+```
+inc VAR
+dec VAR
+add VALUE to VAR
+subtract VALUE from VAR
+multiply VAR by VALUE
+divide VAR by VALUE
+modulo VALUE1 by VALUE2 store VAR
+```
+
+**Conditionals:**
+```
+if VALUE1 OPERATOR VALUE2
+    # code
+elif VALUE1 OPERATOR VALUE2
+    # code
+else
+    # code
+end
+```
+
+**Loops:**
+```
+repeat COUNT
+    # code
+end
+
+while VALUE1 OPERATOR VALUE2
+    # code
+end
+
+each ITEM in LIST
+    # code
+end
+```
+
+**Functions:**
+```
+define NAME
+    # code
+end
+
+define NAME with PARAM1 PARAM2
+    # code
+end
+
+run NAME
+run NAME with ARG1 ARG2
+```
 
 ---
 
@@ -920,13 +925,12 @@ say "Processing complete!"
 
 ### String Literals
 
+Strings use **double quotes** only:
 ```
 set message to "Hello"
 set path to "C:\Users\Documents"
 set multiWord to "This is a sentence"
 ```
-
-Strings use **double quotes** only. No escape sequences currently supported.
 
 ---
 
@@ -957,9 +961,9 @@ Strings use **double quotes** only. No escape sequences currently supported.
 
 ---
 
-**Error:** Type mismatch
-- **Fix:** Simple auto-converts but check logic
-- **Fix:** Use `toInt()` is handled internally
+**Error:** Math operation doesn't work
+- **Fix:** Use exact syntax: `set result to value1 + value2`
+- **Fix:** Ensure spaces around operator
 
 ---
 
@@ -1075,27 +1079,6 @@ end
 
 ---
 
-### 6. Keep It Simple
-Simple language is designed for clarity. Don't over-complicate!
-
-```
-# ❌ Overly complex
-if x > 10
-    if x < 20
-        say "In range"
-    end
-end
-
-# ✅ Clear and simple
-if x > 10
-    if x < 20
-        say "x is between 10 and 20"
-    end
-end
-```
-
----
-
 ## 🎯 Quick Reference Card
 
 ```
@@ -1109,13 +1092,19 @@ end
 ├─────────────────────────────────────────────────┤
 │ VARIABLES                                       │
 │  set x to 10             Create/assign          │
+│  set x to a + b          Math assignment        │
 │  inc x                   Increment              │
 │  dec x                   Decrement              │
 │  add 5 to x              x += 5                 │
+│  subtract 5 from x       x -= 5                 │
+│  multiply x by 2         x *= 2                 │
+│  divide x by 2           x /= 2                 │
 ├─────────────────────────────────────────────────┤
 │ CONDITIONS                                      │
 │  if x is 5               Equal                  │
+│  if x is_not 5           Not equal              │
 │  if x > 10               Greater than           │
+│  if x < 10               Less than              │
 │  if x contains "a"       Contains               │
 │  elif / else / end       Branches               │
 ├─────────────────────────────────────────────────┤
@@ -1129,6 +1118,11 @@ end
 │  push 4 to x             Append                 │
 │  get item from x at 0    Access by index        │
 ├─────────────────────────────────────────────────┤
+│ MAPS                                            │
+│  map x                   Create map             │
+│  put val in x at "key"   Set value              │
+│  key var from x at "key" Get value              │
+├─────────────────────────────────────────────────┤
 │ FUNCTIONS                                       │
 │  define func ... end     Declare function       │
 │  define f with x y       With parameters        │
@@ -1140,6 +1134,7 @@ end
 │  ask number x "prompt"   Number input           │
 │  write x to "file"       Write file             │
 │  read "file" into x      Read file              │
+│  exists "file" store x   Check exists           │
 ├─────────────────────────────────────────────────┤
 │ NETWORK                                         │
 │  fetch "url" into x      HTTP GET               │
@@ -1148,9 +1143,38 @@ end
 │ SYSTEM                                          │
 │  wait 5                  Sleep seconds          │
 │  exit                    Quit program           │
+│  system "command"        Run shell command      │
 │  random x between 1 10   Random number          │
+│  modulo a by b store x   Remainder operation    │
 └─────────────────────────────────────────────────┘
 ```
+
+---
+
+## 🔍 Implementation Details
+
+### Compiled Go Code
+
+Simple programs compile to Go with these features:
+
+**Built-in Helper Functions:**
+- `clearScreen()` - Cross-platform screen clearing
+- `toInt()` - Automatic type conversion to integers
+- `contains()` - Check list/string containment
+- `fetchUrl()` - HTTP GET requests
+- `parseJson()` - JSON parsing
+
+**Automatic Imports:**
+- `fmt` - Formatting and printing
+- `time` - Sleep/delay functionality
+- `math/rand` - Random number generation
+- `os` - File operations and exit
+- `os/exec` - System command execution
+- `strconv` - String conversions
+- `strings` - String manipulation
+- `net/http` - HTTP requests
+- `io` - I/O operations
+- `encoding/json` - JSON parsing
 
 ---
 
